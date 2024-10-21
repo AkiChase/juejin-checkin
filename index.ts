@@ -7,6 +7,10 @@ import {
 } from "./utils";
 
 const message: Map<string, string> = new Map();
+function addMessage(key: string, value: string) {
+  message.set(key, value);
+  console.log(key + " => " + value);
+}
 
 async function loginCheck(page: Page) {
   await page.goto("https://juejin.cn/");
@@ -56,7 +60,7 @@ async function signin(page: Page) {
     getUserInfoRes,
     (data) => data.user_basic.user_name
   );
-  message.set("用户", userName);
+  addMessage("用户", userName);
 
   const signinStatus = await responseHandler(
     todayStatusRes,
@@ -64,15 +68,15 @@ async function signin(page: Page) {
   );
 
   if (signinStatus) {
-    message.set("签到状态", "今日已签到");
+    addMessage("签到状态", "今日已签到");
     const curPoint = await responseHandler(curPointRes, (data) => data);
     const [contCount, sumCount] = await responseHandler(getCountRes, (data) => [
       data.cont_count,
       data.sum_count,
     ]);
-    message.set("当前矿石数", curPoint);
-    message.set("连续签到天数", contCount);
-    message.set("累计签到天数", sumCount);
+    addMessage("当前矿石数", curPoint);
+    addMessage("连续签到天数", contCount);
+    addMessage("累计签到天数", sumCount);
   } else {
     const signinBtn = page.getByRole("button", { name: "立即签到" });
     if (await signinBtn.isVisible()) {
@@ -101,10 +105,10 @@ async function signin(page: Page) {
         (data) => [data.cont_count, data.sum_count]
       );
 
-      message.set("签到状态", `签到成功 +${incrPoint}矿石`);
-      message.set("当前矿石数", sumPoint);
-      message.set("连续签到天数", contCount);
-      message.set("累计签到天数", sumCount);
+      addMessage("签到状态", `签到成功 +${incrPoint}矿石`);
+      addMessage("当前矿石数", sumPoint);
+      addMessage("连续签到天数", contCount);
+      addMessage("累计签到天数", sumCount);
     } else {
       throw "找不到签到按钮";
     }
@@ -140,8 +144,8 @@ async function lottery(page: Page) {
   );
 
   if (freeCount == 0) {
-    message.set("抽奖状态", "今日已免费抽奖");
-    message.set("幸运值", luckyValue);
+    addMessage("抽奖状态", "今日已免费抽奖");
+    addMessage("幸运值", luckyValue);
   } else {
     const lotteryBtn = page.getByRole("button", { name: "免费抽奖" });
     if (await lotteryBtn.isVisible()) {
@@ -159,11 +163,11 @@ async function lottery(page: Page) {
           data.lottery_name,
         ]);
 
-      message.set(
+      addMessage(
         "抽奖状态",
         `幸运值 +${drawLuckyValue}, 抽中奖品 ${lotteryName}`
       );
-      message.set("幸运值", totalLuckyValue);
+      addMessage("幸运值", totalLuckyValue);
     } else {
       throw "找不到抽奖按钮";
     }
@@ -174,7 +178,7 @@ async function main() {
   const env = await loadJsonFile("env.json");
 
   const context = await chromium.launchPersistentContext("./userData", {
-    headless: true,
+    headless: false,
     ...devices["Desktop Edge"],
   });
 
@@ -197,10 +201,10 @@ async function main() {
       "掘金自动化签到成功😆",
       message
     );
-    message.set("报告状态", "QQ邮件已发送");
+    addMessage("报告状态", "QQ邮件已发送");
   } catch (error) {
     console.error(error);
-    message.set("错误信息", JSON.stringify(error, null, 2));
+    addMessage("错误信息", JSON.stringify(error, null, 2));
     await emailReport(
       env.email,
       env.emailAuth,
@@ -208,7 +212,6 @@ async function main() {
       message
     );
   }
-  console.log(message);
   await context.close();
 }
 
