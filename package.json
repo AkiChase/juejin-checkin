@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.6",
+    "@types/nodemailer": "^6.4.16",
+    "playwright": "^1.48.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@playwright/browser-chromium": "^1.48.1",
+    "nodemailer": "^6.9.15"
+  }
+}

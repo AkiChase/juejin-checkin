@@ -1,0 +1,10 @@
+node_modules
+pnpm-lock.yaml
+.vscode
+userData
+juejin-checkin.code-workspace
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+env.json
