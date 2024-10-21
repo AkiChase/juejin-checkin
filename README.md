@@ -28,6 +28,6 @@
 
 终端进入根目录
 
-`npx tsx .\index.ts`
+`pnpm run start`
 
 可以自己使用各种计划任务工具来实现全自动签到
