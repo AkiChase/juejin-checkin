@@ -16,9 +16,18 @@
 - email: QQ 邮箱
 - emailAuth: QQ 邮箱授权码
 
-
 ## 使用
 
 ### 安装
 
+请自行确保 node 已正确安装
+
 `pnpm install`
+
+### 运行
+
+终端进入根目录
+
+`npx tsx .\index.ts`
+
+可以自己使用各种计划任务工具来实现全自动签到
