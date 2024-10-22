@@ -15,7 +15,7 @@ function addMessage(key: string, value: string) {
 async function loginCheck(page: Page) {
   await page.goto("https://juejin.cn/");
   if (
-    await page.locator("css=button.login-button").isVisible({ timeout: 1500 })
+    await page.locator("css=button.login-button").isVisible()
   ) {
     console.log("未登录，请切换为有头模式手动登录，登录完成后重启本程序");
     await page.evaluate(() => {
@@ -81,7 +81,7 @@ async function signin(page: Page) {
     addMessage("累计签到天数", sumCount);
   } else {
     const signinBtn = page.getByRole("button", { name: /立即签到/ });
-    if (await signinBtn.isVisible({ timeout: 3000 })) {
+    if (await signinBtn.isVisible()) {
       const checkInPro = waitForResponseHelper(
         page,
         "https://api.juejin.cn/growth_api/v1/check_in"
@@ -149,8 +149,8 @@ async function lottery(page: Page) {
     addMessage("抽奖状态", "今日已免费抽奖");
     addMessage("幸运值", luckyValue);
   } else {
-    const lotteryBtn = page.getByText("免费抽奖");
-    if (await lotteryBtn.isVisible({ timeout: 3000 })) {
+    const lotteryBtn = page.locator("css=div.text.text-free");
+    if (await lotteryBtn.isVisible()) {
       const lotteryPro = waitForResponseHelper(
         page,
         "https://api.juejin.cn/growth_api/v1/lottery/draw"
