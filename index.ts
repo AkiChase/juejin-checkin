@@ -3,7 +3,9 @@ import {
   emailReport,
   loadJsonFile,
   responseHandler,
+  sleep,
   waitForResponseHelper,
+  wxPusherReport,
 } from "./utils";
 
 const message: Map<string, string> = new Map();
@@ -14,9 +16,7 @@ function addMessage(key: string, value: string) {
 
 async function loginCheck(page: Page) {
   await page.goto("https://juejin.cn/");
-  if (
-    await page.locator("css=button.login-button").isVisible()
-  ) {
+  if (await page.locator("css=button.login-button").isVisible()) {
     console.log("未登录，请切换为有头模式手动登录，登录完成后重启本程序");
     await page.evaluate(() => {
       document
@@ -178,43 +178,63 @@ async function lottery(page: Page) {
 
 async function main() {
   const env = await loadJsonFile("env.json");
+  const maxExecTimes = 3;
+  for (let curExecTimes = 1; ; curExecTimes++) {
+    let success = true;
+    message.clear();
 
-  const context = await chromium.launchPersistentContext("./userData", {
-    headless: false,
-    ...devices["Desktop Edge"],
-  });
+    const context = await chromium.launchPersistentContext("./userData", {
+      headless: false,
+      ...devices["Desktop Edge"],
+    });
 
-  const pages = context.pages();
-  let page: Page;
-  if (pages.length > 0) {
-    page = pages[0];
-  } else {
-    page = await context.newPage();
+    const pages = context.pages();
+    let page: Page;
+    if (pages.length > 0) {
+      page = pages[0];
+    } else {
+      page = await context.newPage();
+    }
+
+    if (!(await loginCheck(page))) return;
+
+    try {
+      await signin(page);
+      await lottery(page);
+      if (env.email && env.emailAuth) {
+        await emailReport(
+          env.email,
+          env.emailAuth,
+          "掘金自动化签到成功😆",
+          message
+        );
+        addMessage("报告状态", "QQ邮件已发送");
+      }
+      if (env.sptList.length > 0) {
+        if (env.sptList.length > 10) {
+          addMessage("错误信息", "WxPusher最多推送10个key，请检查env.json");
+        } else {
+          await wxPusherReport(env.sptList, "掘金自动化签到成功😆", message);
+          addMessage("报告状态", "WxPusher已推送");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      addMessage("错误信息", JSON.stringify(error, null, 2));
+      await emailReport(
+        env.email,
+        env.emailAuth,
+        "掘金自动化签到异常💣",
+        message
+      );
+      success = false;
+    }
+    await context.close();
+
+    if (success || curExecTimes == maxExecTimes) break;
+    console.log(`执行次数[${curExecTimes}/${maxExecTimes}], 60s后重试`);
+    await sleep(60 * 1000); // 60s
   }
-
-  if (!(await loginCheck(page))) return;
-
-  try {
-    await signin(page);
-    await lottery(page);
-    await emailReport(
-      env.email,
-      env.emailAuth,
-      "掘金自动化签到成功😆",
-      message
-    );
-    addMessage("报告状态", "QQ邮件已发送");
-  } catch (error) {
-    console.error(error);
-    addMessage("错误信息", JSON.stringify(error, null, 2));
-    await emailReport(
-      env.email,
-      env.emailAuth,
-      "掘金自动化签到异常💣",
-      message
-    );
-  }
-  await context.close();
 }
 
 main();

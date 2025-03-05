@@ -1,7 +1,13 @@
 import { Page, Response } from "playwright";
 import { createTransport } from "nodemailer";
 import fs from "fs/promises";
+import axios from "axios";
 import { constants } from "fs";
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function loadJsonFile(filePath: string): Promise<any> {
   await fs.access(filePath, constants.F_OK);
   const data = await fs.readFile(filePath, "utf-8");
@@ -35,7 +41,7 @@ export async function emailReport(
   title: string,
   message: Map<string, string>
 ) {
-  let transporter = createTransport({
+  const transporter = createTransport({
     service: "qq",
     auth: {
       user: email,
@@ -55,4 +61,28 @@ export async function emailReport(
     subject: title,
     html: content,
   });
+}
+
+export async function wxPusherReport(
+  sptList: string[],
+  title: string,
+  message: Map<string, string>
+) {
+  const content = Array.from(message.entries())
+    .map(([key, value]) => `- ${key} => ${value}`)
+    .join("\n");
+
+  return await axios.post(
+    "https://wxpusher.zjiecode.com/api/send/message/simple-push",
+    {
+      //推送内容
+      content,
+      //消息摘要
+      summary: title,
+      //内容类型，3表示markdown
+      contentType: 3,
+      //接收方SPT，如果发送给多个用户，不可超过10个
+      sptList,
+    }
+  );
 }
