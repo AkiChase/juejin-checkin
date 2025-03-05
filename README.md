@@ -1,6 +1,6 @@
 ## 掘金签到
 
-实现了简单的签到加抽奖功能
+实现了简单的签到加抽奖功能，支持QQ邮箱和WxPusher进行执行结果消息推送
 
 ## 配置
 
@@ -9,12 +9,14 @@
 ```json
 {
   "email": "xxx@qq.com",
-  "emailAuth": "xxx"
+  "emailAuth": "xxx",
+  "sptList": ["SPT_XXX1", "SPT_XXX2"]
 }
 ```
 
-- email: QQ 邮箱
+- email: QQ 邮箱，若为空则不发送 QQ 邮件
 - emailAuth: QQ 邮箱授权码
+- sptList: WxPusher 的接收方[Spt](https://wxpusher.zjiecode.com/docs/#/?id=%e8%8e%b7%e5%8f%96spt)列表
 
 ## 使用
 
